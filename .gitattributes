@@ -1,0 +1,6 @@
+# Windows PowerShell 5.1 reads these as-is. Keep their exact bytes (UTF-8 BOM + CRLF)
+# so git never converts line endings; a converted file breaks Korean text on Windows.
+*.ps1 -text
+*.bat -text
+*.txt -text
+*.zip binary

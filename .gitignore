@@ -1,0 +1,6 @@
+# Run logs list deleted file names (personal data)
+log-*.txt
+privacy-clean-log-*.txt
+
+.DS_Store
+settings.local.json
