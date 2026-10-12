@@ -4,3 +4,11 @@ privacy-clean-log-*.txt
 
 .DS_Store
 settings.local.json
+
+# WPF build output
+bin/
+obj/
+artifacts/
+
+# Release zip: built by build.ps1 locally and by GitHub Actions for Releases; not committed
+/pc-privacy-cleaner.zip

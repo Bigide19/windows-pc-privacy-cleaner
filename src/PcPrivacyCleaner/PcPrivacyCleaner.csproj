@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!-- .NET Framework 4.6.2 is built into Windows 10 1607 and later, so the exe runs on any
+         supported Windows 10/11 PC without installing a runtime. -->
+    <TargetFramework>net462</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <!-- net462 has no ValueTuple/Span/IsExternalInit; stay on C# 7.3 so nothing silently needs an extra DLL. -->
+    <LangVersion>7.3</LangVersion>
+    <!-- 64-bit process on 64-bit Windows: avoids registry/System32 redirection. -->
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+    <AssemblyName>PcPrivacyCleaner</AssemblyName>
+    <RootNamespace>PcPrivacyCleaner</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- Icon shown for the exe in Explorer and the taskbar. Source artwork: Assets\app.svg -->
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
+    <Version>0.3.0</Version>
+    <Product>개인정보 정리 도구</Product>
+    <Copyright>Bigide19</Copyright>
+    <!-- The deliverable is a single exe: no pdb, no satellite resource folders. -->
+    <DebugType Condition="'$(Configuration)' == 'Release'">none</DebugType>
+    <SatelliteResourceLanguages>ko</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Embedded for the window title bar and the header band (pack://application:,,,/Assets/app.ico). -->
+    <Resource Include="Assets\app.ico" />
+    <None Remove="Assets\app.svg" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Build-time only: the .NET Framework 4.6.2 reference assemblies, so the project also builds on machines
+         without the 4.6.2 targeting pack (e.g. the GitHub Actions Windows runner). Nothing from this package
+         ends up in the output; the deliverable stays a single exe. -->
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Framework assembly (GAC), not a NuGet package: used for Win32_UserProfile when running as admin. -->
+    <Reference Include="System.Management" />
+  </ItemGroup>
+
+</Project>

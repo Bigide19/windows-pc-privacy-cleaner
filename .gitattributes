@@ -1,6 +1,17 @@
-# Windows PowerShell 5.1 reads these as-is. Keep their exact bytes (UTF-8 BOM + CRLF)
-# so git never converts line endings; a converted file breaks Korean text on Windows.
+# Windows text files keep their exact bytes (UTF-8 BOM + CRLF): README.txt is read by Notepad on
+# the user's PC and build.ps1 by Windows PowerShell 5.1, which needs the BOM for Korean text.
 *.ps1 -text
 *.bat -text
 *.txt -text
-*.zip binary
+
+# C# / WPF sources: normalized to LF in the repo, native line endings on checkout.
+*.cs       text
+*.xaml     text
+*.csproj   text
+*.manifest text
+*.svg      text
+*.yml      text
+*.md       text
+
+*.ico binary
+*.png binary
