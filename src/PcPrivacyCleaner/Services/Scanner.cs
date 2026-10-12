@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using PcPrivacyCleaner.Models;
 using PcPrivacyCleaner.Services.Scan;
@@ -10,6 +11,25 @@ namespace PcPrivacyCleaner.Services
     public sealed class Scanner : IScanner
     {
         private readonly RunContext _ctx;
+
+        /// <summary>
+        /// Step names appear in the progress box ("(2/8) Windows에 저장된 인증서 검사 중...") and in the log,
+        /// so they use the same words as the list's group titles.
+        /// </summary>
+        private static readonly KeyValuePair<string, Action<ScanSession>>[] Steps =
+        {
+            Step("공동인증서", CertScanner.FindCerts),
+            Step("Windows에 저장된 인증서", CertScanner.FindCertStore),
+            Step("브라우저", BrowserScanner.Find),
+            Step("메신저", MessengerScanner.Find),
+            Step("개인 파일", PersonalFileScanner.Find),
+            Step("사용 기록", HistoryScanner.Find),
+            Step("저장된 로그인 정보", AccountScanner.FindCredentials),
+            Step("저장된 Wi-Fi", AccountScanner.FindWifi),
+        };
+
+        /// <summary>Used by the Debug-only MockScanner so its fake progress shows the real step names.</summary>
+        public static string[] StepNames { get { return Steps.Select(x => x.Key).ToArray(); } }
 
         public Scanner(RunContext ctx)
         {
@@ -24,25 +44,13 @@ namespace PcPrivacyCleaner.Services
             foreach (var p in s.Profiles) names.Add(p.Name);
             AppLog.Write("검사 시작: 사용자 {0}명 ({1})", s.Profiles.Count, string.Join(", ", names));
 
-            var steps = new List<KeyValuePair<string, Action<ScanSession>>>
-            {
-                Step("공동인증서", CertScanner.FindCerts),
-                Step("Windows 인증서 저장소", CertScanner.FindCertStore),
-                Step("브라우저", BrowserScanner.Find),
-                Step("메신저", MessengerScanner.Find),
-                Step("개인 파일", PersonalFileScanner.Find),
-                Step("사용 기록", HistoryScanner.Find),
-                Step("자격 증명", AccountScanner.FindCredentials),
-                Step("Wi-Fi", AccountScanner.FindWifi),
-            };
-
-            for (int i = 0; i < steps.Count; i++)
+            for (int i = 0; i < Steps.Length; i++)
             {
                 if (token.IsCancellationRequested) break;
-                s.BeginStep(i, steps.Count, steps[i].Key);
+                s.BeginStep(i, Steps.Length, Steps[i].Key);
                 try
                 {
-                    steps[i].Value(s);
+                    Steps[i].Value(s);
                 }
                 catch (OperationCanceledException)
                 {
@@ -50,7 +58,7 @@ namespace PcPrivacyCleaner.Services
                 }
                 catch (Exception ex)
                 {
-                    AppLog.Write("{0} 검사 중 오류: {1}", steps[i].Key, ex.Message);
+                    AppLog.Write("{0} 검사 중 오류: {1}", Steps[i].Key, ex.Message);
                 }
             }
             AppLog.Write(token.IsCancellationRequested ? "검사 중지: {0}개 항목까지 찾음" : "검사 완료: {0}개 항목", s.Items.Count);

@@ -1,8 +1,8 @@
-# Windows text files keep their exact bytes (UTF-8 BOM + CRLF): README.txt is read by Notepad on
-# the user's PC and build.ps1 by Windows PowerShell 5.1, which needs the BOM for Korean text.
-*.ps1 -text
-*.bat -text
+# README.txt keeps its exact bytes (UTF-8 BOM + CRLF): it is opened with Notepad on the user's PC.
 *.txt -text
+
+# Visual Studio writes solution files with CRLF; keep them that way on every OS.
+*.sln text eol=crlf
 
 # C# / WPF sources: normalized to LF in the repo, native line endings on checkout.
 *.cs       text

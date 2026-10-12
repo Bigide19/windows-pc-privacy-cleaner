@@ -1,28 +1,29 @@
-# Builds the app on a Windows runner and publishes pc-privacy-cleaner.zip as a GitHub Release
-# whenever main changes. The README's download link points at releases/latest, so a merge to main
-# is all it takes to ship a new zip.
+# Builds the app on a Windows runner and publishes pc-privacy-cleaner.zip as a new GitHub Release
+# whenever the shipped files change on main. The README's download link points at releases/latest,
+# so a merge to main is all it takes to ship.
 #
-# Version: the tag comes from <Version> in the csproj (e.g. v0.3.0).
-#   - New version  -> a new Release is created and becomes "latest".
-#   - Same version -> the zip in that existing Release is replaced (the tag keeps pointing at the
-#                     commit that first created it). Bump <Version> when a change deserves its own release.
+# Versioning (semantic, from Conventional Commits since the last vX.Y.Z tag):
+#   - "type!:" subject or "BREAKING CHANGE" in a body -> major
+#   - "feat:"                                          -> minor
+#   - anything else (fix, refactor, perf, ...)         -> patch
+# Every run that reaches the release step ships a new version; a published version is never overwritten.
+# The same number goes into the exe's file version (-p:Version).
 name: Release
 
 on:
   push:
     branches: [main]
-    # Docs-only changes (README.md, screenshots) do not rebuild the zip.
+    # Only changes to what ships in the zip. Docs-only changes (README.md, screenshots) do not release.
     paths:
       - 'src/**'
       - 'README.txt'
-      - 'build.ps1'
       - '.github/workflows/release.yml'
   workflow_dispatch:
 
 permissions:
-  contents: write   # create the Release and upload the zip
+  contents: write   # create the tag, the Release and upload the zip
 
-# Two quick merges must not race on the same Release.
+# Two quick merges must not compute the same next version.
 concurrency:
   group: release
   cancel-in-progress: false
@@ -30,38 +31,80 @@ concurrency:
 jobs:
   release:
     runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history and tags, needed to find the last version and the commits since
 
-      # Same script used for local builds: Release build + zip (exe and README.txt in one folder).
-      # Windows PowerShell 5.1 on purpose, the same shell the script is written for.
-      - name: Build zip
-        shell: powershell
-        run: .\build.ps1
-
-      - name: Read version
+      - name: Next version
         id: ver
-        shell: pwsh
         run: |
-          $v = (Select-Xml -Path src/PcPrivacyCleaner/PcPrivacyCleaner.csproj -XPath '//Version').Node.InnerText
-          if (-not $v) { throw 'No <Version> in PcPrivacyCleaner.csproj' }
-          "tag=v$v" >> $env:GITHUB_OUTPUT
+          $last = git tag --list 'v*' --sort=-v:refname | Where-Object { $_ -match '^v\d+\.\d+\.\d+$' } | Select-Object -First 1
+          if ($last) {
+            $range = "$last..HEAD"
+            $v = [version]$last.Substring(1)
+          } else {
+            # No release yet: bump from 0.0.0 (a feat makes it v0.1.0).
+            $range = 'HEAD'
+            $v = [version]'0.0.0'
+          }
+
+          $subjects = @(git log $range --format=%s)
+          if ($subjects.Count -eq 0) {
+            Write-Host "No commits since $last; nothing to release."
+            "skip=true" >> $env:GITHUB_OUTPUT
+            exit 0
+          }
+          $bodies = (git log $range --format=%B) -join "`n"
+
+          if (($subjects -match '^[a-z]+(\([^)]*\))?!:') -or $bodies -match 'BREAKING[ -]CHANGE') {
+            $next = "$($v.Major + 1).0.0"
+          } elseif ($subjects -match '^feat(\([^)]*\))?:') {
+            $next = "$($v.Major).$($v.Minor + 1).0"
+          } else {
+            $next = "$($v.Major).$($v.Minor).$($v.Build + 1)"
+          }
+          Write-Host "Last: $last  Next: v$next"
+          "version=$next" >> $env:GITHUB_OUTPUT
+          "skip=false" >> $env:GITHUB_OUTPUT
+
+          # Release notes: how to start, then the commit subjects in this version.
+          $notes = @(
+            '압축을 풀고 PcPrivacyCleaner.exe를 실행하세요. 자세한 사용법은 zip 안의 README.txt에 있습니다.'
+            ''
+            '처음 한 번은 연습 모드로 실행해서 무엇이 지워질지 먼저 확인하세요.'
+            ''
+            '## 변경 사항'
+            ''
+          ) + ($subjects | ForEach-Object { "- $_" })
+          # A file, not an argument, so the Korean text reaches gh unchanged.
+          $notes -join "`n" | Set-Content -Path release-notes.md -Encoding utf8NoBOM
+
+      - name: Build
+        if: steps.ver.outputs.skip == 'false'
+        run: dotnet build src/PcPrivacyCleaner/PcPrivacyCleaner.csproj -c Release -nologo "-p:Version=${{ steps.ver.outputs.version }}"
+
+      # One folder in the zip (exe + user guide) so "압축 풀기" gives a tidy folder.
+      # ZipFile with explicit "/" entry names, so the zip also opens cleanly on macOS.
+      - name: Pack zip
+        if: steps.ver.outputs.skip == 'false'
+        run: |
+          Add-Type -AssemblyName System.IO.Compression, System.IO.Compression.FileSystem
+          $zip = [System.IO.Compression.ZipFile]::Open("$PWD/pc-privacy-cleaner.zip", 'Create')
+          try {
+            [void][System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, "$PWD/src/PcPrivacyCleaner/bin/Release/net462/PcPrivacyCleaner.exe", 'pc-privacy-cleaner/PcPrivacyCleaner.exe')
+            [void][System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, "$PWD/README.txt", 'pc-privacy-cleaner/README.txt')
+          } finally {
+            $zip.Dispose()
+          }
+          Get-Item pc-privacy-cleaner.zip | Select-Object Name, Length
 
       - name: Publish release
-        shell: pwsh
+        if: steps.ver.outputs.skip == 'false'
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ steps.ver.outputs.tag }}
-        run: |
-          gh release view $env:TAG *> $null
-          if ($LASTEXITCODE -eq 0) {
-            Write-Host "Release $env:TAG exists; replacing the zip."
-            gh release upload $env:TAG pc-privacy-cleaner.zip --clobber
-          } else {
-            $notes = @(
-              '압축을 풀고 PcPrivacyCleaner.exe를 실행하세요. 자세한 사용법은 zip 안의 README.txt에 있습니다.'
-              ''
-              '처음 한 번은 연습 모드로 실행해서 무엇이 지워질지 먼저 확인하세요.'
-            ) -join "`n"
-            gh release create $env:TAG pc-privacy-cleaner.zip --target $env:GITHUB_SHA --title $env:TAG --notes $notes --latest
-          }
+          TAG: v${{ steps.ver.outputs.version }}
+        run: gh release create $env:TAG pc-privacy-cleaner.zip --target $env:GITHUB_SHA --title $env:TAG --notes-file release-notes.md --latest

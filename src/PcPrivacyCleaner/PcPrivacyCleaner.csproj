@@ -16,6 +16,8 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <!-- Icon shown for the exe in Explorer and the taskbar. Source artwork: Assets\app.svg -->
     <ApplicationIcon>Assets\app.ico</ApplicationIcon>
+    <!-- Local builds only. Released builds get the version of their git tag: the release workflow
+         computes it from the commit messages and passes -p:Version. -->
     <Version>0.3.0</Version>
     <Product>개인정보 정리 도구</Product>
     <Copyright>Bigide19</Copyright>
@@ -25,7 +27,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Embedded for the window title bar and the header band (pack://application:,,,/Assets/app.ico). -->
+    <!-- Embedded for the window title bar icon (pack://application:,,,/Assets/app.ico). -->
     <Resource Include="Assets\app.ico" />
     <None Remove="Assets\app.svg" />
   </ItemGroup>

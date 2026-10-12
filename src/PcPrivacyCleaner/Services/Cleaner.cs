@@ -51,7 +51,7 @@ namespace PcPrivacyCleaner.Services
                 try
                 {
                     int failed = RemoveTargets(d);
-                    if (d.Action != null) d.Action(d);
+                    if (d.Action != null) d.Action();
                     if (failed > 0) { result.Failed++; AppLog.Write("일부 실패: " + label); }
                     else { result.Ok++; AppLog.Write("완료: " + label); }
                 }

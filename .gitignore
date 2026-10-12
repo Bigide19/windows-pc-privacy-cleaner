@@ -10,5 +10,5 @@ bin/
 obj/
 artifacts/
 
-# Release zip: built by build.ps1 locally and by GitHub Actions for Releases; not committed
+# Release zip: built by GitHub Actions and attached to a Release; never committed
 /pc-privacy-cleaner.zip

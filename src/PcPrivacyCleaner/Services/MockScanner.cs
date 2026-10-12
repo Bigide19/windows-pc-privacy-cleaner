@@ -14,7 +14,7 @@ namespace PcPrivacyCleaner.Services
     {
         public List<FoundItem> Scan(IProgress<ScanProgress> progress, CancellationToken token)
         {
-            var steps = new[] { "공동인증서", "Windows 인증서 저장소", "브라우저", "메신저", "개인 파일", "사용 기록", "자격 증명", "Wi-Fi" };
+            var steps = Scanner.StepNames;
             for (int i = 0; i < steps.Length; i++)
             {
                 if (token.IsCancellationRequested) break;
@@ -69,15 +69,14 @@ namespace PcPrivacyCleaner.Services
             h1.Contents.AddRange(new[] { "최근에 연 파일과 폴더 58개", "  2026-10-10  주간보고.xlsx", "  2026-10-09  여권사본.jpg" });
             list.Add(h1);
 
-            var h2 = new FoundItem(ItemGroup.History, "복사해 둔 내용 (클립보드)") { User = "sample (지금 계정)", Summary = "텍스트 120자", ActionText = "복사해 둔 내용과 Win+V 기록을 지웁니다.", Action = _ => { } };
+            var h2 = new FoundItem(ItemGroup.History, "복사해 둔 내용 (클립보드)") { User = "sample (지금 계정)", Summary = "텍스트 120자", ActionText = "복사해 둔 내용과 Win+V 기록을 지웁니다.", Action = () => { } };
             h2.Contents.Add("지금 복사해 둔 내용: 텍스트 120자 (내용은 화면에 표시하지 않습니다)");
             list.Add(h2);
 
-            var w1 = new FoundItem(ItemGroup.Wifi, "MyHome_5G") { User = "PC 공통", Default = false, ActionText = "이 PC가 기억하는 이 Wi-Fi와 비밀번호를 지웁니다.", Action = _ => { } };
+            var w1 = new FoundItem(ItemGroup.Wifi, "MyHome_5G") { User = "PC 공통", Default = false, ActionText = "이 PC가 기억하는 이 Wi-Fi와 비밀번호를 지웁니다.", Action = () => { } };
             w1.Contents.Add("네트워크 이름: MyHome_5G");
             list.Add(w1);
 
-            foreach (var it in list) it.Scope = DeleteScope.Build(it);
             return list;
         }
     }

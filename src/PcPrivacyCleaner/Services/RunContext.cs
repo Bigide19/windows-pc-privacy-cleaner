@@ -23,8 +23,8 @@ namespace PcPrivacyCleaner.Services
         /// </summary>
         public bool OtherAccount { get; private set; }
 
-        /// <summary>Start with 연습 모드 checked (passed through when relaunching as admin).</summary>
-        public bool ScanOnly { get; set; }
+        /// <summary>Start with 연습 모드 checked (--dry-run, passed through when relaunching as admin).</summary>
+        public bool StartInDryRun { get; set; }
 
         public static RunContext Capture()
         {

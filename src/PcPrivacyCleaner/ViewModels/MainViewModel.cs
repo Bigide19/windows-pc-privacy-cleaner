@@ -38,7 +38,7 @@ namespace PcPrivacyCleaner.ViewModels
             view.SortDescriptions.Add(new SortDescription("Index", ListSortDirection.Ascending));
             ItemsView = view;
 
-            _isDryRun = ctx.ScanOnly;
+            _isDryRun = ctx.StartInDryRun;
 
             ScanCommand = new RelayCommand(async () => await ScanAsync(), () => !IsBusy);
             CleanCommand = new RelayCommand(async () => await CleanAsync(), () => !IsBusy && Items.Count > 0);
@@ -240,7 +240,7 @@ namespace PcPrivacyCleaner.ViewModels
                 {
                     var list = _scanner.Scan(progress, token);
                     // Scope touches the disk (is it a file or a folder?), so it is computed here, off the UI thread.
-                    foreach (var it in list) if (it.Scope == null) it.Scope = DeleteScope.Build(it);
+                    foreach (var it in list) it.Scope = DeleteScope.Build(it);
                     return list;
                 });
 
@@ -352,7 +352,8 @@ namespace PcPrivacyCleaner.ViewModels
         {
             try
             {
-                var psi = new ProcessStartInfo(_ctx.ExePath, IsDryRun ? "--scan-only" : "")
+                // Keep 연습 모드 on across the restart if it was on.
+                var psi = new ProcessStartInfo(_ctx.ExePath, IsDryRun ? "--dry-run" : "")
                 {
                     UseShellExecute = true,
                     Verb = "runas"

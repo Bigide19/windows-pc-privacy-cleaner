@@ -31,7 +31,7 @@ namespace PcPrivacyCleaner.Services
             }
             catch
             {
-                // The tool folder can be read-only (e.g. opened straight from inside the zip). Fall back to Desktop.
+                // The tool folder can be read-only (e.g. a protected or network folder). Fall back to Desktop.
                 path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
                     "privacy-clean-log-" + stamp + ".txt");
             }

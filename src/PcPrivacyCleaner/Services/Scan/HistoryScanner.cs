@@ -13,18 +13,25 @@ namespace PcPrivacyCleaner.Services.Scan
     /// <summary>6. 사용 기록, 휴지통, 임시 파일, 클립보드.</summary>
     public static class HistoryScanner
     {
+        private sealed class RegHistory
+        {
+            public string Key;
+            /// <summary>Heading in the detail panel. Null for keys whose values are binary shell IDs, not readable text.</summary>
+            public string Label;
+        }
+
         /// <summary>
         /// Run box (Win+R), Explorer address bar and search, recent documents, Open/Save dialog history.
         /// Relative to HKEY_CURRENT_USER, so only the current user can be cleaned.
         /// </summary>
-        private static readonly string[] RegHistoryKeys =
+        private static readonly RegHistory[] RegHistoryKeys =
         {
-            @"Software\Microsoft\Windows\CurrentVersion\Explorer\RunMRU",
-            @"Software\Microsoft\Windows\CurrentVersion\Explorer\TypedPaths",
-            @"Software\Microsoft\Windows\CurrentVersion\Explorer\WordWheelQuery",
-            @"Software\Microsoft\Windows\CurrentVersion\Explorer\RecentDocs",
-            @"Software\Microsoft\Windows\CurrentVersion\Explorer\ComDlg32\OpenSavePidlMRU",
-            @"Software\Microsoft\Windows\CurrentVersion\Explorer\ComDlg32\LastVisitedPidlMRU"
+            new RegHistory { Key = @"Software\Microsoft\Windows\CurrentVersion\Explorer\RunMRU", Label = "실행 창(Win+R)에 입력한 명령" },
+            new RegHistory { Key = @"Software\Microsoft\Windows\CurrentVersion\Explorer\TypedPaths", Label = "탐색기 주소창에 입력한 경로" },
+            new RegHistory { Key = @"Software\Microsoft\Windows\CurrentVersion\Explorer\WordWheelQuery", Label = "탐색기에서 검색한 단어" },
+            new RegHistory { Key = @"Software\Microsoft\Windows\CurrentVersion\Explorer\RecentDocs", Label = "최근 연 파일" },
+            new RegHistory { Key = @"Software\Microsoft\Windows\CurrentVersion\Explorer\ComDlg32\OpenSavePidlMRU" },
+            new RegHistory { Key = @"Software\Microsoft\Windows\CurrentVersion\Explorer\ComDlg32\LastVisitedPidlMRU" },
         };
 
         public static void Find(ScanSession s)
@@ -76,7 +83,7 @@ namespace PcPrivacyCleaner.Services.Scan
             s.Add(item, pf);
         }
 
-        /// <summary>The Recycle Bin lives in <drive>\$Recycle.Bin\<user SID> on every fixed drive.</summary>
+        /// <summary>The Recycle Bin lives in [drive]:\$Recycle.Bin\[user SID] on every fixed drive.</summary>
         private static void AddRecycleBin(ScanSession s, UserProfile pf)
         {
             var bins = new List<string>();
@@ -151,7 +158,7 @@ namespace PcPrivacyCleaner.Services.Scan
             int count = 0;
             foreach (var k in RegHistoryKeys)
             {
-                using (var key = Registry.CurrentUser.OpenSubKey(k))
+                using (var key = Registry.CurrentUser.OpenSubKey(k.Key))
                 {
                     if (key != null) count += key.ValueCount + key.SubKeyCount;
                 }
@@ -164,9 +171,9 @@ namespace PcPrivacyCleaner.Services.Scan
                 Count = 0,
                 Summary = count + "개",
                 ActionText = "위 사용 기록을 지웁니다. 로그아웃했다가 다시 로그인하면 완전히 사라집니다.",
-                Action = _ =>
+                Action = () =>
                 {
-                    foreach (var k in RegHistoryKeys) Registry.CurrentUser.DeleteSubKeyTree(k, false);
+                    foreach (var k in RegHistoryKeys) Registry.CurrentUser.DeleteSubKeyTree(k.Key, false);
                 }
             };
             try { item.Contents.AddRange(RegistryHistoryLines(10)); }
@@ -181,17 +188,10 @@ namespace PcPrivacyCleaner.Services.Scan
         /// </summary>
         private static List<string> RegistryHistoryLines(int max)
         {
-            var sections = new[]
-            {
-                new[] { RegHistoryKeys[0], "실행 창(Win+R)에 입력한 명령" },
-                new[] { RegHistoryKeys[1], "탐색기 주소창에 입력한 경로" },
-                new[] { RegHistoryKeys[2], "탐색기에서 검색한 단어" },
-                new[] { RegHistoryKeys[3], "최근 연 파일" },
-            };
             var lines = new List<string>();
-            foreach (var sec in sections)
+            foreach (var sec in RegHistoryKeys.Where(k => k.Label != null))
             {
-                using (var key = Registry.CurrentUser.OpenSubKey(sec[0]))
+                using (var key = Registry.CurrentUser.OpenSubKey(sec.Key))
                 {
                     if (key == null) continue;
                     var values = new List<string>();
@@ -205,7 +205,7 @@ namespace PcPrivacyCleaner.Services.Scan
                         if (text.Length > 0) values.Add(text);
                     }
                     if (values.Count == 0) continue;
-                    string line = string.Format("{0} {1}개: {2}", sec[1], values.Count, string.Join(", ", values.Take(max)));
+                    string line = string.Format("{0} {1}개: {2}", sec.Label, values.Count, string.Join(", ", values.Take(max)));
                     if (values.Count > max) line += " ...";
                     lines.Add(line);
                 }
@@ -239,7 +239,7 @@ namespace PcPrivacyCleaner.Services.Scan
                 Count = 0,
                 Summary = summary,
                 ActionText = "복사해 둔 내용과 Win+V 기록을 지웁니다.",
-                Action = _ => Application.Current.Dispatcher.Invoke(ClearClipboard)
+                Action = () => Application.Current.Dispatcher.Invoke(ClearClipboard)
             };
             if (summary.Length > 0) item.Contents.Add(string.Format("지금 복사해 둔 내용: {0} (내용은 화면에 표시하지 않습니다)", summary));
             item.Contents.Add("Win+V를 누르면 나오는, 예전에 복사한 내용도 함께 지웁니다.");

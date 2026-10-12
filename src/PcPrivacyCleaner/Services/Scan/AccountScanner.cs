@@ -3,7 +3,7 @@ using PcPrivacyCleaner.Models;
 
 namespace PcPrivacyCleaner.Services.Scan
 {
-    /// <summary>7. Windows 자격 증명 and 8. Wi-Fi 저장 목록. Both start unchecked (mixed with work entries).</summary>
+    /// <summary>7. 저장된 로그인 정보 (Windows Credential Manager) and 8. 저장된 Wi-Fi. Both start unchecked (mixed with work entries).</summary>
     public static class AccountScanner
     {
         public static void FindCredentials(ScanSession s)
@@ -22,13 +22,8 @@ namespace PcPrivacyCleaner.Services.Scan
                     Size = 0,
                     Count = 1,
                     Summary = c.UserName,
-                    Data = c,
                     ActionText = "Windows에 저장된 이 로그인 정보만 지웁니다. 다음에 접속할 때 아이디와 비밀번호를 다시 입력해야 합니다.",
-                    Action = it =>
-                    {
-                        var e = (NativeCredentials.Entry)it.Data;
-                        NativeCredentials.Delete(e.Target, e.Type);
-                    }
+                    Action = () => NativeCredentials.Delete(c.Target, c.Type)
                 };
                 item.Contents.Add("접속 대상: " + display);
                 if (!string.IsNullOrEmpty(c.UserName)) item.Contents.Add("계정: " + c.UserName);
@@ -48,9 +43,8 @@ namespace PcPrivacyCleaner.Services.Scan
                     Size = 0,
                     Count = 1,
                     User = "PC 공통",
-                    Data = p,
                     ActionText = "이 PC가 기억하는 이 Wi-Fi와 비밀번호를 지웁니다. 다음에 접속할 때 비밀번호를 다시 입력해야 합니다.",
-                    Action = it => WlanApi.DeleteProfile((WlanApi.Profile)it.Data)
+                    Action = () => WlanApi.DeleteProfile(p)
                 };
                 item.Contents.Add("네트워크 이름: " + p.Name);
                 item.Contents.Add("이 PC가 기억하는 Wi-Fi입니다. 근처에 가면 저장된 비밀번호로 자동 접속합니다.");

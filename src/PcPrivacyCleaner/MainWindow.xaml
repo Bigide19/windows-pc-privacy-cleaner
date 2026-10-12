@@ -11,8 +11,8 @@
         Background="#F5F5F7">
 
     <Window.Resources>
-        <!-- Light, Apple-like neutrals: gray window, white cards, one blue accent, red only for delete. -->
-        <SolidColorBrush x:Key="Window" Color="#F5F5F7" />
+        <!-- Light, Apple-like neutrals: gray window, white cards, one blue accent, red only for delete.
+             The window gray (#F5F5F7) is set directly on <Window>: a StaticResource can not be used before it is defined. -->
         <SolidColorBrush x:Key="Card" Color="#FFFFFF" />
         <SolidColorBrush x:Key="Text" Color="#1D1D1F" />
         <SolidColorBrush x:Key="Accent" Color="#007AFF" />
@@ -59,8 +59,7 @@
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
         <inf:InverseBoolToVisibilityConverter x:Key="InvBoolToVis" />
 
-        <!-- Toolbar buttons: light, flat, with enough padding to be easy to hit. -->
-        <!-- Secondary buttons: white pills with a hairline border. -->
+        <!-- Toolbar buttons: white pills with a hairline border, padded so they are easy to hit. -->
         <Style x:Key="ToolButton" TargetType="Button">
             <Setter Property="Padding" Value="14,6" />
             <Setter Property="Margin" Value="0,0,8,0" />
@@ -167,7 +166,7 @@
             <RowDefinition Height="Auto" />   <!-- log -->
         </Grid.RowDefinitions>
 
-        <!-- ===== Title (large title on the window background, no colored band) ===== -->
+        <!-- ===== Title ===== -->
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="24,20,24,0">
             <Image Source="{StaticResource AppIconVector}" Width="44" Height="44" Margin="0,0,14,0" VerticalAlignment="Center" />
             <StackPanel VerticalAlignment="Center">

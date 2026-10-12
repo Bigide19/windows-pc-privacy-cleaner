@@ -51,14 +51,9 @@ namespace PcPrivacyCleaner.Services.Scan
                     _sqliteWorks = true;
                     return r;
                 }
-                catch (DllNotFoundException ex)
+                catch (Exception ex) when (ex is DllNotFoundException || ex is EntryPointNotFoundException)
                 {
-                    _sqliteWorks = false;
-                    AppLog.Write("내용 미리보기(winsqlite3.dll)를 사용할 수 없습니다: " + ex.Message);
-                    throw new PreviewException(PreviewException.NoSqlite);
-                }
-                catch (EntryPointNotFoundException ex)
-                {
+                    // winsqlite3.dll missing or too old: remember it so the remaining previews skip straight to the message.
                     _sqliteWorks = false;
                     AppLog.Write("내용 미리보기(winsqlite3.dll)를 사용할 수 없습니다: " + ex.Message);
                     throw new PreviewException(PreviewException.NoSqlite);
@@ -102,8 +97,7 @@ namespace PcPrivacyCleaner.Services.Scan
             h = h.Trim().TrimStart('.').ToLowerInvariant();
             if (h.StartsWith("www.")) h = h.Substring(4);
             if (h.Length == 0) return "";
-            System.Net.IPAddress ip;
-            if (System.Net.IPAddress.TryParse(h, out ip)) return h;
+            if (System.Net.IPAddress.TryParse(h, out _)) return h;
             var parts = h.Split('.');
             if (parts.Length <= 2) return h;
             int n = 2;

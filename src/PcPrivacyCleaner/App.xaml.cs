@@ -20,7 +20,7 @@ namespace PcPrivacyCleaner
             DispatcherUnhandledException += OnUnhandledException;
 
             var ctx = RunContext.Capture();
-            ctx.ScanOnly = e.Args.Any(a => string.Equals(a, "--scan-only", StringComparison.OrdinalIgnoreCase));
+            ctx.StartInDryRun = e.Args.Any(a => string.Equals(a, "--dry-run", StringComparison.OrdinalIgnoreCase));
             AppLog.Initialize(ctx.ExeDir);
             AppLog.Write("개인정보 정리 도구 시작. 실행 계정: {0}, 관리자: {1}, 로그인 사용자: {2}",
                 ctx.IdentityName, ctx.IsAdmin, ctx.ConsoleUser);

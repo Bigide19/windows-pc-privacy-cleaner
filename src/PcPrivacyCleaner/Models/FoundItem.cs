@@ -38,14 +38,14 @@ namespace PcPrivacyCleaner.Models
         /// <summary>Folders kept in place; only what is inside them is deleted (Temp, Recent, Recycle Bin).</summary>
         public List<string> ContentsOf { get; private set; }
 
-        /// <summary>Non-file work (certificate store, credentials, Wi-Fi, registry, clipboard).</summary>
-        public Action<FoundItem> Action { get; set; }
+        /// <summary>
+        /// Non-file work (certificate store, credentials, Wi-Fi, registry, clipboard). The scanner captures
+        /// whatever the delete needs (thumbprint, credential target, Wi-Fi profile) in the closure.
+        /// </summary>
+        public Action Action { get; set; }
 
         /// <summary>Plain-language description of what Action does, shown under "지우는 범위".</summary>
         public string ActionText { get; set; }
-
-        /// <summary>Opaque value for Action (thumbprint, credential target, Wi-Fi profile name, ...).</summary>
-        public object Data { get; set; }
 
         /// <summary>Checked when the list first appears.</summary>
         public bool Default { get; set; }

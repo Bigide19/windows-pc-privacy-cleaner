@@ -43,9 +43,8 @@ namespace PcPrivacyCleaner.Interop
         public static List<Profile> ListProfiles()
         {
             var result = new List<Profile>();
-            int version;
             IntPtr handle;
-            if (WlanOpenHandle(2, IntPtr.Zero, out version, out handle) != 0) return result;
+            if (WlanOpenHandle(2, IntPtr.Zero, out _, out handle) != 0) return result;
             try
             {
                 IntPtr ifList;
@@ -90,9 +89,8 @@ namespace PcPrivacyCleaner.Interop
 
         public static void DeleteProfile(Profile profile)
         {
-            int version;
             IntPtr handle;
-            int rc = WlanOpenHandle(2, IntPtr.Zero, out version, out handle);
+            int rc = WlanOpenHandle(2, IntPtr.Zero, out _, out handle);
             if (rc != 0) throw new InvalidOperationException("Wi-Fi 서비스에 연결하지 못했습니다 (오류 코드 " + rc + ")");
             try
             {

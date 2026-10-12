@@ -296,7 +296,8 @@ namespace PcPrivacyCleaner.Services.Scan
             lines.Add("비밀번호 값은 읽지도, 화면에 표시하지도 않습니다.");
         }
 
-        private static void CookieLines(List<string[]> rows, List<string> lines, out string summary)
+        /// <summary>Rows of (url or host, count) from a query, ranked by count. A failed query (null) gives an empty list.</summary>
+        private static SitePreview.SiteList RankRows(List<string[]> rows, int show)
         {
             var sites = new List<string>();
             var weights = new List<long>();
@@ -309,7 +310,12 @@ namespace PcPrivacyCleaner.Services.Scan
                     weights.Add(long.TryParse(row[1], out w) ? w : 1);
                 }
             }
-            var sl = SitePreview.Rank(sites, weights);
+            return SitePreview.Rank(sites, weights, show);
+        }
+
+        private static void CookieLines(List<string[]> rows, List<string> lines, out string summary)
+        {
+            var sl = RankRows(rows, 15);
             if (sl.Count == 0)
             {
                 summary = "없음";
@@ -340,18 +346,7 @@ namespace PcPrivacyCleaner.Services.Scan
                 if (from.Length > 0) line += string.Format(" ({0} ~ {1})", from, to);
                 lines.Add(line);
             }
-            var sites = new List<string>();
-            var weights = new List<long>();
-            if (top != null)
-            {
-                foreach (var row in top)
-                {
-                    long w;
-                    sites.Add(SitePreview.SiteName(row[0]));
-                    weights.Add(long.TryParse(row[1], out w) ? w : 1);
-                }
-            }
-            var sl = SitePreview.Rank(sites, weights, 10);
+            var sl = RankRows(top, 10);
             if (sl.Line.Length > 0) lines.Add("자주 간 사이트: " + sl.Line);
         }
     }

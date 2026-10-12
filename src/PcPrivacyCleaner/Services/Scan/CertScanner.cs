@@ -10,7 +10,7 @@ using PcPrivacyCleaner.Models;
 namespace PcPrivacyCleaner.Services.Scan
 {
     /// <summary>
-    /// 1. 공동인증서 (NPKI / GPKI / EPKI) and 2. Windows 인증서 저장소.
+    /// 1. 공동인증서 (NPKI / GPKI / EPKI) and 2. Windows에 저장된 인증서 (the personal certificate store).
     /// </summary>
     public static class CertScanner
     {
@@ -19,6 +19,8 @@ namespace PcPrivacyCleaner.Services.Scan
             public string Path;
             public UserProfile Profile;   // null = shared location (drive root, Program Files)
         }
+
+        private const string WorkCertKind = "업무용 인증서 (공공기관, 교육기관용)";
 
         private sealed class CertInfo
         {
@@ -94,13 +96,28 @@ namespace PcPrivacyCleaner.Services.Scan
             if (name.Length == 0) name = "(이름을 읽지 못함)";
 
             string exp = "", valid = "";
-            if (expires.HasValue)
-            {
-                bool expired = expires.Value < DateTime.Now;
-                exp = expired ? "만료됨" : "만료 " + expires.Value.ToString("yyyy-MM-dd");
-                valid = expired ? "만료됨" : expires.Value.ToString("yyyy-MM-dd") + "까지";
-            }
+            if (expires.HasValue) ExpiryTexts(expires.Value, out exp, out valid);
             return new CertInfo { Name = name, Subject = subject, ExpText = exp, ValidText = valid };
+        }
+
+        /// <summary>"만료 2027-03-01" for the list and "2027-03-01까지" for the detail panel; "만료됨" for both once expired.</summary>
+        private static void ExpiryTexts(DateTime notAfter, out string exp, out string valid)
+        {
+            if (notAfter < DateTime.Now)
+            {
+                exp = valid = "만료됨";
+                return;
+            }
+            string date = notAfter.ToString("yyyy-MM-dd");
+            exp = "만료 " + date;
+            valid = date + "까지";
+        }
+
+        /// <summary>Registers a certificate item. Certificates outside any profile (drive root, Program Files) belong to the PC.</summary>
+        private static void AddCert(ScanSession s, FoundItem item, Root root)
+        {
+            s.Add(item, root.Profile);
+            if (root.Profile == null) item.User = "PC 공통";
         }
 
         public static void FindCerts(ScanSession s)
@@ -126,7 +143,7 @@ namespace PcPrivacyCleaner.Services.Scan
                     string ca = (dir.Parent != null && dir.Parent.Parent != null) ? dir.Parent.Parent.Name : "";
 
                     string kindText = "개인 인증서 (은행, 정부24, 홈택스 등에 로그인할 때 사용)";
-                    if (kind != "NPKI") kindText = kind + " 업무용 인증서 (공공기관, 교육기관용)";
+                    if (kind != "NPKI") kindText = kind + " " + WorkCertKind;
                     else if (isCorp) kindText = "법인 인증서 (회사 업무용일 수 있음)";
 
                     FoundItem item;
@@ -145,8 +162,7 @@ namespace PcPrivacyCleaner.Services.Scan
                     item.Contents.Add("종류: " + kindText);
                     if (ca.Length > 0) item.Contents.Add("발급 기관: " + ca);
                     if (info.ValidText.Length > 0) item.Contents.Add("유효 기간: " + info.ValidText);
-                    s.Add(item, root.Profile);
-                    if (root.Profile == null) item.User = "PC 공통";
+                    AddCert(s, item, root);
                 }
 
                 // GPKI/EPKI can also be loose files: <name>_sig.cer / <name>_sig.key / <name>_env.cer ...
@@ -169,10 +185,9 @@ namespace PcPrivacyCleaner.Services.Scan
                     };
                     item.Paths.AddRange(g.Select(f => f.FullName));
                     item.Contents.Add("소유자: " + info.Name);
-                    item.Contents.Add("종류: " + kind + " 업무용 인증서 (공공기관, 교육기관용)");
+                    item.Contents.Add("종류: " + kind + " " + WorkCertKind);
                     if (info.ValidText.Length > 0) item.Contents.Add("유효 기간: " + info.ValidText);
-                    s.Add(item, root.Profile);
-                    if (root.Profile == null) item.User = "PC 공통";
+                    AddCert(s, item, root);
                 }
             }
         }
@@ -191,20 +206,21 @@ namespace PcPrivacyCleaner.Services.Scan
                     if (!c.HasPrivateKey) continue;
                     string subj = c.GetNameInfo(X509NameType.SimpleName, false);
                     string issuer = c.GetNameInfo(X509NameType.SimpleName, true);
-                    string exp = c.NotAfter < DateTime.Now ? "만료됨" : "만료 " + c.NotAfter.ToString("yyyy-MM-dd");
+                    string thumb = c.Thumbprint;
+                    string exp, valid;
+                    ExpiryTexts(c.NotAfter, out exp, out valid);
                     var item = new FoundItem(ItemGroup.CertStore, subj)
                     {
                         Default = false,
                         Size = 0,
                         Count = 1,
                         Summary = exp,
-                        Data = c.Thumbprint,
                         ActionText = "Windows에 저장된 이 인증서를 지웁니다.",
-                        Action = DeleteStoreCert
+                        Action = () => DeleteStoreCert(thumb)
                     };
                     item.Contents.Add("이름: " + subj);
                     item.Contents.Add("발급한 곳: " + issuer);
-                    item.Contents.Add("유효 기간: " + (c.NotAfter < DateTime.Now ? "만료됨" : c.NotAfter.ToString("yyyy-MM-dd") + "까지"));
+                    item.Contents.Add("유효 기간: " + valid);
                     item.Contents.Add("로그인이나 전자 서명에 사용할 수 있는 인증서입니다.");
                     s.Add(item, s.Current);
                 }
@@ -215,9 +231,8 @@ namespace PcPrivacyCleaner.Services.Scan
         /// Removing the certificate from the store leaves its private key behind, so the key is deleted first
         /// (CNG key or legacy CSP container), then the certificate.
         /// </summary>
-        private static void DeleteStoreCert(FoundItem item)
+        private static void DeleteStoreCert(string thumb)
         {
-            string thumb = (string)item.Data;
             using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
             {
                 store.Open(OpenFlags.ReadWrite);
