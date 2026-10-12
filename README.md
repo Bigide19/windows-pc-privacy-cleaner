@@ -8,6 +8,7 @@
 ![Windows 10, 11](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4?style=flat-square)
 ![설치 필요 없음](https://img.shields.io/badge/%EC%84%A4%EC%B9%98-%ED%95%84%EC%9A%94%20%EC%97%86%EC%9D%8C-34C759?style=flat-square)
 ![다운로드](https://img.shields.io/github/downloads/Bigide19/windows-pc-privacy-cleaner/total?style=flat-square&label=%EB%8B%A4%EC%9A%B4%EB%A1%9C%EB%93%9C)
+![라이선스 MIT](https://img.shields.io/badge/%EB%9D%BC%EC%9D%B4%EC%84%A0%EC%8A%A4-MIT-8E8E93?style=flat-square)
 
 회사 PC를 포맷하지 않고 개인정보만 골라서 지웁니다.
 
@@ -22,7 +23,7 @@
 ## 사용 방법
 
 1. zip을 받아 압축을 풉니다.
-2. `PcPrivacyCleaner.exe`를 실행합니다. 검사가 바로 시작됩니다.
+2. `PcPrivacyCleaner.exe`를 실행하고, '사용 전 확인' 창에서 [동의하고 시작]을 누릅니다. 검사가 바로 시작됩니다.
 3. '연습 모드'로 한 번 실행해서 무엇이 지워지는지 확인합니다.
 4. 연습 모드를 끄고 [선택 항목 삭제]를 누릅니다.
 
@@ -57,7 +58,7 @@
 <details>
 <summary>'Windows의 PC 보호' 창이 나와요</summary>
 
-[추가 정보]를 누른 뒤 [실행]을 누르세요. 코드 서명이 없어서 나오는 경고입니다.
+[추가 정보]를 누른 뒤 [실행]을 누르세요. 코드 서명이 없어서 나오는 경고입니다. 처음 실행할 때는 Windows가 파일을 검사하느라 창이 뜨기까지 10초쯤 걸릴 수 있습니다.
 
 </details>
 
@@ -78,3 +79,11 @@
 ## 요구 사항
 
 Windows 10(1607 이상)과 Windows 11에서 실행됩니다.
+
+## 면책 조항
+
+이 프로그램은 무료로, 있는 그대로 제공합니다. 개발자는 프로그램이 모든 환경에서 올바르게 동작한다고 보증하지 않습니다. 프로그램을 사용해서 생긴 데이터 손실이나 그 밖의 손해에도 책임지지 않습니다. 무엇을 삭제할지는 사용자가 직접 고르며, 회사 PC에서 쓸 때는 회사 보안 규정을 먼저 확인해야 합니다.
+
+## 라이선스
+
+[MIT 라이선스](LICENSE)로 공개합니다. 출처 표시를 지키면 누구나 자유롭게 쓰고 고칠 수 있습니다.

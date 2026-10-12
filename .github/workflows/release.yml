@@ -17,6 +17,7 @@ on:
     paths:
       - 'src/**'
       - 'README.txt'
+      - 'LICENSE'
       - '.github/workflows/release.yml'
   workflow_dispatch:
 
@@ -87,7 +88,8 @@ jobs:
         if: steps.ver.outputs.skip == 'false'
         run: dotnet build src/PcPrivacyCleaner/PcPrivacyCleaner.csproj -c Release -nologo "-p:Version=${{ steps.ver.outputs.version }}"
 
-      # One folder in the zip (exe + user guide) so "압축 풀기" gives a tidy folder.
+      # One folder in the zip (exe + user guide + license) so "압축 풀기" gives a tidy folder.
+      # LICENSE is renamed to LICENSE.txt so Notepad opens it with a double-click.
       # ZipFile with explicit "/" entry names, so the zip also opens cleanly on macOS.
       - name: Pack zip
         if: steps.ver.outputs.skip == 'false'
@@ -97,6 +99,7 @@ jobs:
           try {
             [void][System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, "$PWD/src/PcPrivacyCleaner/bin/Release/net462/PcPrivacyCleaner.exe", 'pc-privacy-cleaner/PcPrivacyCleaner.exe')
             [void][System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, "$PWD/README.txt", 'pc-privacy-cleaner/README.txt')
+            [void][System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, "$PWD/LICENSE", 'pc-privacy-cleaner/LICENSE.txt')
           } finally {
             $zip.Dispose()
           }

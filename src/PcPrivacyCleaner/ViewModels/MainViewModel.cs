@@ -287,7 +287,7 @@ namespace PcPrivacyCleaner.ViewModels
 
             if (!dry)
             {
-                string msg = string.Format("선택한 {0}개 항목을 삭제합니다. 삭제한 뒤에는 되돌릴 수 없습니다.", sel.Count);
+                string msg = string.Format("선택한 {0}개 항목을 삭제합니다. 삭제한 뒤에는 되돌릴 수 없습니다.\n삭제 결과에 대한 책임은 사용자에게 있습니다.", sel.Count);
                 int certCount = sel.Count(x => x.Group == ItemGroup.Cert);
                 if (certCount > 0)
                     msg += string.Format("\n\n공동인증서 {0}개가 포함되어 있습니다. 휴대폰이나 USB에 백업해 두지 않았다면 나중에 은행에서 다시 발급받아야 합니다.", certCount);
@@ -360,8 +360,8 @@ namespace PcPrivacyCleaner.ViewModels
         {
             try
             {
-                // Keep 연습 모드 on across the restart if it was on.
-                var psi = new ProcessStartInfo(_ctx.ExePath, IsDryRun ? "--dry-run" : "")
+                // Keep 연습 모드 on across the restart if it was on. --agreed: the terms were accepted at this start.
+                var psi = new ProcessStartInfo(_ctx.ExePath, (IsDryRun ? "--dry-run " : "") + "--agreed")
                 {
                     UseShellExecute = true,
                     Verb = "runas"

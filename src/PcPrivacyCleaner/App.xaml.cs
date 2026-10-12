@@ -56,6 +56,27 @@ namespace PcPrivacyCleaner
                 return;
             }
 #endif
+            // Terms before anything is scanned (see ConsentWindow). [관리자로 실행] passes --agreed, so the person who
+            // just agreed is not asked again by the elevated copy.
+            if (e.Args.Any(a => string.Equals(a, "--agreed", StringComparison.OrdinalIgnoreCase)))
+            {
+                AppLog.Step("사용 조건에 동의한 상태로 다시 실행했습니다.");
+            }
+            else
+            {
+                // While the dialog is up it is the only window; without this, closing it would end the app
+                // before the main window exists.
+                ShutdownMode = ShutdownMode.OnExplicitShutdown;
+                if (new ConsentWindow().ShowDialog() != true)
+                {
+                    AppLog.Step("사용 조건에 동의하지 않아 종료했습니다.");
+                    Shutdown();
+                    return;
+                }
+                AppLog.Step("사용 조건에 동의했습니다.");
+                ShutdownMode = ShutdownMode.OnMainWindowClose;
+            }
+
             var window = new MainWindow(new MainViewModel(scanner, ctx) { UnfinishedRun = unfinished });
             MainWindow = window;
             window.Show();

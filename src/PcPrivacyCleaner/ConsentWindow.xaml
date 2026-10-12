@@ -1,0 +1,80 @@
+<Window x:Class="PcPrivacyCleaner.ConsentWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="개인정보 정리 도구 - 사용 전 확인"
+        Width="560" SizeToContent="Height" ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen"
+        Icon="pack://application:,,,/Assets/app.ico"
+        FontFamily="Segoe UI, Malgun Gothic" FontSize="13"
+        Background="#F5F5F7">
+
+    <!-- Shown on every start, before anything is scanned. Agreement is not stored anywhere: saving it would leave
+         a registry or AppData trace, which a tool that removes traces should not do. Same colors as MainWindow. -->
+    <Window.Resources>
+        <SolidColorBrush x:Key="Text" Color="#1D1D1F" />
+        <SolidColorBrush x:Key="Accent" Color="#007AFF" />
+        <SolidColorBrush x:Key="Line" Color="#E5E5EA" />
+        <SolidColorBrush x:Key="Muted" Color="#6E6E73" />
+
+        <Style x:Key="Point" TargetType="TextBlock">
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="LineHeight" Value="20" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+            <Setter Property="Foreground" Value="{StaticResource Text}" />
+        </Style>
+
+        <!-- Rounded button like MainWindow's PrimaryButton; Background picks the color. -->
+        <Style x:Key="RoundButton" TargetType="Button">
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Padding" Value="22,8" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="18" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.88" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.88" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <StackPanel Margin="28,24,28,22">
+        <TextBlock Text="사용 전 확인" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource Text}" />
+        <TextBlock Style="{StaticResource Point}" Margin="0,10,0,16" Foreground="{StaticResource Muted}"
+                   Text="이 프로그램은 PC에 남은 개인정보를 찾아서, 사용자가 고른 항목을 되돌릴 수 없게 삭제합니다." />
+
+        <Border Background="White" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="10" Padding="18,14,18,8">
+            <StackPanel>
+                <TextBlock Style="{StaticResource Point}" Text="• 무료로, 있는 그대로 제공합니다. 모든 PC에서 올바르게 동작한다고 보증하지 않습니다." />
+                <TextBlock Style="{StaticResource Point}" Text="• 무엇을 지울지는 사용자가 직접 고르고 확인합니다. 삭제 결과와 그로 인해 생긴 손해에 대한 책임은 사용자에게 있습니다." />
+                <TextBlock Style="{StaticResource Point}" Text="• 회사 PC라면 이런 프로그램을 실행해도 되는지 회사 보안 규정을 먼저 확인해 주세요." />
+                <TextBlock Style="{StaticResource Point}" Text="• 처음에는 연습 모드로 무엇이 지워지는지 확인한 뒤 사용하세요." />
+            </StackPanel>
+        </Border>
+
+        <TextBlock Style="{StaticResource Point}" Margin="0,14,0,0" Foreground="{StaticResource Muted}"
+                   Text="위 내용에 동의하면 [동의하고 시작]을 누르세요. 자세한 조건은 함께 들어 있는 LICENSE.txt(MIT 라이선스)를 따릅니다." />
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,18,0,0">
+            <!-- Exit is the default and the Esc/X answer, so a stray Enter does not count as agreement. -->
+            <Button x:Name="ExitButton" Style="{StaticResource RoundButton}" Content="종료" IsCancel="True" IsDefault="True"
+                    Background="White" Foreground="{StaticResource Text}" BorderBrush="{StaticResource Line}" BorderThickness="1"
+                    Click="Exit_Click" />
+            <Button x:Name="AgreeButton" Style="{StaticResource RoundButton}" Content="동의하고 시작" Margin="10,0,0,0"
+                    Background="{StaticResource Accent}" Foreground="White" BorderThickness="0"
+                    Click="Agree_Click" />
+        </StackPanel>
+    </StackPanel>
+</Window>

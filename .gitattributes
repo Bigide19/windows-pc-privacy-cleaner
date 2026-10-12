@@ -1,6 +1,9 @@
 # README.txt keeps its exact bytes (UTF-8 BOM + CRLF): it is opened with Notepad on the user's PC.
 *.txt -text
 
+# LICENSE goes into the zip as LICENSE.txt, so it gets CRLF too (Notepad before Windows 10 1809 shows LF as one line).
+LICENSE text eol=crlf
+
 # Visual Studio writes solution files with CRLF; keep them that way on every OS.
 *.sln text eol=crlf
 
