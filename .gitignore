@@ -12,3 +12,16 @@ artifacts/
 
 # Release zip: built by GitHub Actions and attached to a Release; never committed
 /pc-privacy-cleaner.zip
+
+# Visual Studio per-user state (created when the solution is opened on Windows)
+.vs/
+*.user
+*.suo
+
+# Code-signing keys: never commit, even if signing is added later
+*.pfx
+*.snk
+
+# Local environment values
+.env
+.env.*
