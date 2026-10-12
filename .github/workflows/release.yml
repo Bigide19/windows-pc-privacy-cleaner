@@ -63,5 +63,5 @@ jobs:
               ''
               '처음 한 번은 연습 모드로 실행해서 무엇이 지워질지 먼저 확인하세요.'
             ) -join "`n"
-            gh release create $env:TAG pc-privacy-cleaner.zip --target $env:GITHUB_SHA --title "개인정보 정리 도구 $env:TAG" --notes $notes --latest
+            gh release create $env:TAG pc-privacy-cleaner.zip --target $env:GITHUB_SHA --title $env:TAG --notes $notes --latest
           }
