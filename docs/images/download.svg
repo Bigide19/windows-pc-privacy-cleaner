@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="72" viewBox="0 0 360 72">
+  <!-- README download button. GitHub READMEs cannot style links, so the button is an image wrapped in a link.
+       Same blue as the app accent; text uses the viewer's system Korean font. -->
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2E8BFF"/>
+      <stop offset="1" stop-color="#0066E0"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="360" height="72" rx="36" fill="url(#g)"/>
+  <!-- Download arrow -->
+  <g transform="translate(40,20)" fill="none" stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M16 2 V22"/>
+    <path d="M7 14 L16 23 L25 14"/>
+    <path d="M4 30 H28"/>
+  </g>
+  <text x="88" y="35" fill="#FFFFFF" font-family="'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',system-ui,sans-serif" font-size="22" font-weight="700">다운로드</text>
+  <text x="88" y="55" fill="#FFFFFF" fill-opacity="0.85" font-family="'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',system-ui,sans-serif" font-size="13">최신 버전  ·  zip 파일</text>
+</svg>

@@ -6,7 +6,7 @@
 
 회사 PC를 포맷하지 않고 개인정보만 골라서 지웁니다.
 
-[![다운로드](https://img.shields.io/badge/%EB%8B%A4%EC%9A%B4%EB%A1%9C%EB%93%9C-%EC%B5%9C%EC%8B%A0%20%EB%B2%84%EC%A0%84-007AFF?style=for-the-badge)](https://github.com/Bigide19/windows-pc-privacy-cleaner/releases/latest/download/pc-privacy-cleaner.zip)
+<a href="https://github.com/Bigide19/windows-pc-privacy-cleaner/releases/latest/download/pc-privacy-cleaner.zip"><img src="docs/images/download.svg" width="300" alt="다운로드"></a>
 
 ![버전](https://img.shields.io/github/v/release/Bigide19/windows-pc-privacy-cleaner?style=flat-square&label=%EB%B2%84%EC%A0%84)
 ![Windows 10, 11](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4?style=flat-square)
