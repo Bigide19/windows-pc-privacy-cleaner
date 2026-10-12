@@ -251,12 +251,12 @@ namespace PcPrivacyCleaner.Services.Scan
                         // Elliptic-curve certificates have no RSA key; their CNG key is deleted the same way.
                         var ec = cert.GetECDsaPrivateKey() as ECDsaCng;
                         if (ec != null) ec.Key.Delete();
-                        else AppLog.Write("  인증서 개인키 종류를 알 수 없어서 인증서만 지웁니다.");
+                        else AppLog.Step("  인증서 개인키 종류를 알 수 없어서 인증서만 지웁니다.");
                     }
                 }
                 catch (Exception ex)
                 {
-                    AppLog.Write("  인증서 개인키는 지우지 못했습니다 ({0}). 인증서만 지웁니다.", ex.Message);
+                    AppLog.StepError("  인증서 개인키는 지우지 못해서 인증서만 지웁니다", ex);
                 }
                 store.Remove(cert);
             }

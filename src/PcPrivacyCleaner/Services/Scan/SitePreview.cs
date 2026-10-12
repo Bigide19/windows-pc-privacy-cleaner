@@ -55,7 +55,7 @@ namespace PcPrivacyCleaner.Services.Scan
                 {
                     // winsqlite3.dll missing or too old: remember it so the remaining previews skip straight to the message.
                     _sqliteWorks = false;
-                    AppLog.Write("내용 미리보기(winsqlite3.dll)를 사용할 수 없습니다: " + ex.Message);
+                    AppLog.StepError("내용 미리보기(winsqlite3.dll)를 사용할 수 없습니다", ex);
                     throw new PreviewException(PreviewException.NoSqlite);
                 }
             }

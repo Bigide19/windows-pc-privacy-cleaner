@@ -14,8 +14,13 @@ namespace PcPrivacyCleaner
             InitializeComponent();
             _vm = vm;
             DataContext = vm;
-            // Start scanning as soon as the window is on screen.
-            Loaded += async (s, e) => await _vm.ScanAsync();
+            // Start scanning as soon as the window is on screen. A crash of the previous run is offered for
+            // reporting first, so the question does not pop up over the scan overlay.
+            Loaded += async (s, e) =>
+            {
+                await _vm.OfferCrashReportAsync();
+                await _vm.ScanAsync();
+            };
         }
 
         private void LogBox_TextChanged(object sender, TextChangedEventArgs e)

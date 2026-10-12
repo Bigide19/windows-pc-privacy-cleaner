@@ -269,7 +269,7 @@ namespace PcPrivacyCleaner.ViewModels
             }
             catch (Exception ex)
             {
-                AppLog.Write("검사 중 오류: " + ex.Message);
+                AppLog.StepError("검사 중 오류", ex);
                 ShowMessage("검사 중 오류가 발생했습니다.\n\n" + ex.Message + "\n\n기록 파일: " + AppLog.FilePath, MessageBoxImage.Error);
             }
             finally
@@ -310,7 +310,7 @@ namespace PcPrivacyCleaner.ViewModels
             }
             catch (Exception ex)
             {
-                AppLog.Write("삭제 중 오류: " + ex.Message);
+                AppLog.StepError("삭제 중 오류", ex);
             }
             finally
             {
@@ -378,18 +378,45 @@ namespace PcPrivacyCleaner.ViewModels
 
         private static void ReportIssue()
         {
-            try
+            if (!IssueReport.TryOpen(AppLog.StepsText(IssueReport.ProgressBudget)))
+                ShowMessage(IssueReport.OpenFailedText, MessageBoxImage.Information);
+        }
+
+        // ---------- crash of the previous run ----------
+
+        /// <summary>Set by App when the previous run did not exit normally (see CrashReport).</summary>
+        public CrashReport.UnfinishedRun UnfinishedRun { get; set; }
+
+        /// <summary>
+        /// Called once when the window opens, before the first scan. Asks only when there is evidence of a crash:
+        /// the app's own fatal-error line, or a Windows crash record for this exe. A run that was ended from
+        /// Task Manager or by a power cut leaves neither, and is not worth a question.
+        /// </summary>
+        public async Task OfferCrashReportAsync()
+        {
+            var run = UnfinishedRun;
+            UnfinishedRun = null;
+            if (run == null) return;
+
+            // The event log query can take a moment on a busy PC; keep the window responsive.
+            List<string> records = await Task.Run(() => CrashReport.FindWindowsCrashRecords(run.StartedAt));
+            if (!run.HadFatalStep && records.Count == 0)
             {
-                IssueReport.Open();
-                AppLog.Write("문제 알리기 양식을 브라우저로 열었습니다.");
+                AppLog.Step("지난 실행이 정상 종료되지 않았지만 오류 기록은 없습니다.");
+                return;
             }
-            catch (Exception ex)
-            {
-                // No default browser, or the browser is blocked by company policy. Give the address instead.
-                AppLog.Write("문제 알리기 양식을 열지 못했습니다: " + ex.Message);
-                ShowMessage("브라우저를 열지 못했습니다. 아래 주소를 브라우저에 직접 입력해 주세요.\n\n" + IssueReport.FormUrl,
-                    MessageBoxImage.Information);
-            }
+            AppLog.Step("지난 실행이 오류로 끝났습니다. Windows 오류 기록 {0}건", CrashReport.CountRecords(records));
+
+            string msg = "지난번 실행이 오류로 끝났습니다. 알려 주시면 고치는 데 큰 도움이 됩니다.\n\n" + IssueReport.Question;
+            if (Ask(msg, "지난 실행 오류") != MessageBoxResult.Yes) return;
+
+            // Windows' records first (they are short), then the previous run's steps, newest kept.
+            var lines = new List<string> { "[지난 실행의 오류]" };
+            lines.AddRange(records);
+            lines.Add("[지난 실행의 진행 기록]");
+            lines.AddRange(run.Steps);
+            if (!IssueReport.TryOpen(AppLog.TakeTail(lines, IssueReport.ProgressBudget)))
+                ShowMessage(IssueReport.OpenFailedText, MessageBoxImage.Information);
         }
 
         private static void ShowMessage(string text, MessageBoxImage icon)

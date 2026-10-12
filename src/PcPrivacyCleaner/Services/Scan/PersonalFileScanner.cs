@@ -103,7 +103,8 @@ namespace PcPrivacyCleaner.Services.Scan
                     }
                     if (hits > HitLimit)
                     {
-                        AppLog.Write("{0}: 개인 파일 후보가 {1}개를 넘어서 나머지는 표시하지 않았습니다.", pf.Label, HitLimit);
+                        AppLog.Step("개인 파일 후보가 {0}개를 넘어서 나머지는 표시하지 않았습니다.", HitLimit);
+                        AppLog.Detail("  해당 사용자: " + pf.Label);
                         break;
                     }
                 }

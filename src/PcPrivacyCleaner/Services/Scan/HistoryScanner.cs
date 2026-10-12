@@ -262,7 +262,7 @@ namespace PcPrivacyCleaner.Services.Scan
             }
             catch
             {
-                AppLog.Write("  클립보드 기록(Win+V)은 지우지 못했습니다. 설정 > 시스템 > 클립보드에서 [지우기]를 눌러 주세요.");
+                AppLog.Step("  클립보드 기록(Win+V)은 지우지 못했습니다. 설정 > 시스템 > 클립보드에서 [지우기]를 눌러 주세요.");
             }
         }
     }

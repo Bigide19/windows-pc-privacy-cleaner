@@ -42,7 +42,8 @@ namespace PcPrivacyCleaner.Services
             s.Profiles = ScanSession.LoadProfiles(_ctx);
             var names = new List<string>();
             foreach (var p in s.Profiles) names.Add(p.Name);
-            AppLog.Write("검사 시작: 사용자 {0}명 ({1})", s.Profiles.Count, string.Join(", ", names));
+            AppLog.Step("검사 시작: 사용자 {0}명", s.Profiles.Count);
+            AppLog.Detail("  검사할 사용자: " + string.Join(", ", names));
 
             for (int i = 0; i < Steps.Length; i++)
             {
@@ -58,10 +59,11 @@ namespace PcPrivacyCleaner.Services
                 }
                 catch (Exception ex)
                 {
-                    AppLog.Write("{0} 검사 중 오류: {1}", Steps[i].Key, ex.Message);
+                    // Step names are the fixed labels in the Steps table above.
+                    AppLog.StepError(Steps[i].Key + " 검사 중 오류", ex);
                 }
             }
-            AppLog.Write(token.IsCancellationRequested ? "검사 중지: {0}개 항목까지 찾음" : "검사 완료: {0}개 항목", s.Items.Count);
+            AppLog.Step(token.IsCancellationRequested ? "검사 중지: {0}개 항목까지 찾음" : "검사 완료: {0}개 항목", s.Items.Count);
             return s.Items;
         }
 
