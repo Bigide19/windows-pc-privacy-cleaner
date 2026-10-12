@@ -4,13 +4,13 @@
 
 # 개인정보 정리 도구
 
-회사 PC를 포맷하지 않고 개인정보만 골라서 지웁니다.
-
-<a href="https://github.com/Bigide19/windows-pc-privacy-cleaner/releases/latest/download/pc-privacy-cleaner.zip"><img src="docs/images/download.svg" width="300" alt="다운로드"></a>
-
 ![버전](https://img.shields.io/github/v/release/Bigide19/windows-pc-privacy-cleaner?style=flat-square&label=%EB%B2%84%EC%A0%84)
 ![Windows 10, 11](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4?style=flat-square)
 ![설치 필요 없음](https://img.shields.io/badge/%EC%84%A4%EC%B9%98-%ED%95%84%EC%9A%94%20%EC%97%86%EC%9D%8C-34C759?style=flat-square)
+
+회사 PC를 포맷하지 않고 개인정보만 골라서 지웁니다.
+
+<a href="https://github.com/Bigide19/windows-pc-privacy-cleaner/releases/latest/download/pc-privacy-cleaner.zip"><img src="docs/images/download.svg" width="300" alt="다운로드"></a>
 
 </div>
 
