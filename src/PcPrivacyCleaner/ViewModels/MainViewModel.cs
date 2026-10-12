@@ -48,6 +48,8 @@ namespace PcPrivacyCleaner.ViewModels
                 () => { foreach (var it in Items.Where(x => x.Group == ItemGroup.Files)) it.IsChecked = true; },
                 () => !IsBusy);
             RelaunchAdminCommand = new RelayCommand(RelaunchAsAdmin, () => !IsBusy);
+            // Only opens the browser, so it stays available while a scan or delete is running.
+            ReportIssueCommand = new RelayCommand(ReportIssue);
 
             AppLog.LineAdded += line =>
             {
@@ -88,6 +90,11 @@ namespace PcPrivacyCleaner.ViewModels
         }
 
         public bool CanRelaunchAsAdmin { get { return !_ctx.IsAdmin; } }
+
+        // ---------- footer ----------
+
+        /// <summary>Shown next to [문제 알리기], so a user can tell which version they are reporting about.</summary>
+        public string VersionText { get { return "v" + IssueReport.AppVersion; } }
 
         // ---------- list ----------
 
@@ -193,6 +200,7 @@ namespace PcPrivacyCleaner.ViewModels
         public ICommand ResetCommand { get; private set; }
         public ICommand CheckAllFilesCommand { get; private set; }
         public ICommand RelaunchAdminCommand { get; private set; }
+        public ICommand ReportIssueCommand { get; private set; }
 
         private void Cancel()
         {
@@ -365,6 +373,22 @@ namespace PcPrivacyCleaner.ViewModels
             {
                 // The UAC prompt was cancelled.
                 ShowMessage("관리자 권한으로 다시 실행하지 못했습니다. 지금 계정으로 계속 사용할 수 있습니다.", MessageBoxImage.Information);
+            }
+        }
+
+        private static void ReportIssue()
+        {
+            try
+            {
+                IssueReport.Open();
+                AppLog.Write("문제 알리기 양식을 브라우저로 열었습니다.");
+            }
+            catch (Exception ex)
+            {
+                // No default browser, or the browser is blocked by company policy. Give the address instead.
+                AppLog.Write("문제 알리기 양식을 열지 못했습니다: " + ex.Message);
+                ShowMessage("브라우저를 열지 못했습니다. 아래 주소를 브라우저에 직접 입력해 주세요.\n\n" + IssueReport.FormUrl,
+                    MessageBoxImage.Information);
             }
         }
 

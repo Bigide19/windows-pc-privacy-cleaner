@@ -392,11 +392,21 @@
             </DockPanel>
         </Border>
 
-        <!-- ===== Log (collapsed by default) ===== -->
-        <Expander Grid.Row="5" Header="진행 기록" Margin="24,0,24,12" IsExpanded="False" Foreground="{StaticResource Muted}">
-            <TextBox x:Name="LogBox" Text="{Binding LogText, Mode=OneWay}" IsReadOnly="True" Height="120" Margin="0,4,0,0"
-                     VerticalScrollBarVisibility="Auto" TextWrapping="NoWrap" FontSize="12"
-                     BorderBrush="{StaticResource Line}" TextChanged="LogBox_TextChanged" />
-        </Expander>
+        <!-- ===== Log (collapsed by default) + version and [문제 알리기] on the right ===== -->
+        <Grid Grid.Row="5" Margin="24,0,24,12">
+            <Expander Header="진행 기록" IsExpanded="False" Foreground="{StaticResource Muted}">
+                <TextBox x:Name="LogBox" Text="{Binding LogText, Mode=OneWay}" IsReadOnly="True" Height="120" Margin="0,4,0,0"
+                         VerticalScrollBarVisibility="Auto" TextWrapping="NoWrap" FontSize="12"
+                         BorderBrush="{StaticResource Line}" TextChanged="LogBox_TextChanged" />
+            </Expander>
+            <!-- Declared after the Expander so it sits on top of the header line at the right edge and gets the clicks.
+                 VerticalAlignment Top keeps it on the header row when the log is expanded. -->
+            <TextBlock HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,2,0,0" Foreground="{StaticResource Muted}">
+                <Run Text="{Binding VersionText, Mode=OneWay}" />
+                <Run Text="  ·  " />
+                <Hyperlink Command="{Binding ReportIssueCommand}" Foreground="{StaticResource Accent}" TextDecorations="None"
+                           ToolTip="브라우저에서 문제 알리기 양식을 엽니다. 앱 버전과 Windows 버전만 미리 채워집니다.">문제 알리기</Hyperlink>
+            </TextBlock>
+        </Grid>
     </Grid>
 </Window>
